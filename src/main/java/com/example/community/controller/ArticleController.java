@@ -2,6 +2,7 @@ package com.example.community.controller;
 
 import com.example.community.dto.*;
 import com.example.community.service.ArticleService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,30 +18,32 @@ public class ArticleController {
     }
 
     @GetMapping("/titles")
-    public List<TitleDTO> getTitles(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int pageSize) {
-        return articleService.readTitles(page, pageSize);
+    public ResponseEntity<List<TitleDTO>> getTitles(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int pageSize) {
+        List<TitleDTO> titleDTOList =  articleService.readTitles(page, pageSize);
+        return ResponseEntity.ok().body(titleDTOList);
     }
 
     @GetMapping("/{id}")
-    public ArticleDTO getArticleById(@PathVariable Long id) {
-        return articleService.readArticleById(id);
+    public ResponseEntity<ArticleDTO> getArticleById(@PathVariable Long id) {
+        ArticleDTO articleDTO =  articleService.readArticleById(id);
+        return ResponseEntity.ok().body(articleDTO);
     }
 
     @PostMapping
-    public MessageResponse createArticle(@RequestBody CreateArticleRequest request) {
+    public ResponseEntity<MessageResponse> createArticle(@RequestBody CreateArticleRequest request) {
         articleService.createArticle(request);
-        return new MessageResponse("Article has been successfully created.");
+        return ResponseEntity.ok().body(new MessageResponse("Article has been successfully created."));
     }
 
     @PatchMapping
-    public MessageResponse updateArticle(@RequestBody UpdateArticleRequest request) {
+    public ResponseEntity<MessageResponse> updateArticle(@RequestBody UpdateArticleRequest request) {
         articleService.updateArticleById(request);
-        return new MessageResponse("Article with ID " + request.getId() + " has been successfully updated.");
+        return ResponseEntity.ok().body(new MessageResponse("Article with ID " + request.getId() + " has been successfully updated."));
     }
 
     @DeleteMapping("/{id}")
-    public MessageResponse deleteArticle(@PathVariable Long id) {
+    public ResponseEntity<MessageResponse> deleteArticle(@PathVariable Long id) {
         articleService.deleteArticleById(id);
-        return new MessageResponse("Article with ID " + id + " has been successfully deleted.");
+        return ResponseEntity.ok().body(new MessageResponse("Article with ID " + id + " has been successfully deleted."));
     }
 }
