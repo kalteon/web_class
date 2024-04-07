@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Community Board</title>
+</head>
+<body>
+<h2>글 수정</h2>
+<form id="createArticleForm">
+  <label>제목: <input type="text" id="title" name="title"></label><br>
+  <label>내용: <textarea id="content" name="content"></textarea></label><br>
+  <input type="button" id="createButton" value="작성" onclick="updateArticle()">
+</form>
+
+<script>
+  function updateArticle() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var articleId = urlParams.get('id');
+    var title = document.getElementById("title").value;
+    var content = document.getElementById("content").value;
+
+    var data = {
+      id: articleId,
+      title: title,
+      content: content
+    };
+
+    fetch('/articles', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Failed to create article');
+              }
+              location.reload();
+            })
+            .catch(error => console.error('Error:', error));
+  }
+</script>
+</body>
+</html>

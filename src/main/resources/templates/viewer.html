@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Article</title>
+</head>
+<body>
+<h1>View Article</h1>
+<div id="articleDetails">
+  <!-- 아티클의 상세 정보를 표시할 곳 -->
+</div>
+
+<script>
+  // 페이지 로드 시 아티클 데이터를 가져와서 표시하는 함수 호출
+  var imageNames;
+
+  window.onload = function() {
+    // URL에서 아티클 ID를 가져옴
+    var urlParams = new URLSearchParams(window.location.search);
+    var articleId = urlParams.get('id');
+
+    // 해당 ID를 사용하여 아티클 데이터를 가져옴
+    fetch(`/articles/${articleId}`)
+            .then(response => response.json())
+            .then(article => {
+              imageNames = article.imageNames;
+              // 아티클의 상세 정보를 표시
+              var articleDetails = document.getElementById("articleDetails");
+
+              var contentHTML = `
+                <h2>${article.title}</h2>
+                <p>Author: ${article.author}</p>
+                <p>Create At: ${article.createAt}</p>
+                <p>Content: ${article.content}</p>
+                <div id="imageContainer"></div>`;
+
+              // 이미지를 content 아래에 순서대로 추가
+              imageNames.forEach(function(fileName) {
+                // "empty"인 경우 이미지 추가하지 않음
+                if (fileName !== "empty") {
+                  contentHTML += `<img src="/images/${fileName}" alt="${fileName}"><br>`;
+                }
+              });
+
+              contentHTML += `
+                <input type="button" value="삭제" onClick="deleteArticle(${articleId})">
+                <a href="editor?id=${articleId}">수정</a>`;
+
+              articleDetails.innerHTML = contentHTML;
+            })
+            .catch(error => console.error('Error:', error));
+  };
+
+  function deleteArticle(articleId) {
+
+    if (confirm("정말로 이 글을 삭제하시겠습니까?")) {
+      imageNames.forEach(function(imageName) {
+        fetch(`/images/${imageName}`, {
+          method: 'DELETE'
+        })
+                .catch(error => console.error('Failed to delete image:', error));
+      });
+
+      fetch(`/articles/${articleId}`, {
+        method: 'DELETE'
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Failed to delete article');
+                }
+                // 삭제 성공 시, 페이지를 새로고침하여 변경된 내용을 반영
+                window.location.href = '/';
+              })
+              .catch(error => console.error('Error:', error));
+    }
+  }
+</script>
+</body>
+</html>

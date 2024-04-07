@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Community Board</title>
+</head>
+<body>
+<h1>Community Board</h1>
+
+<h2>글 목록</h2>
+<form id="articleForm" method="get">
+    <label>게시글 개수:
+        <select id="pageSize" name="pageSize">
+            <option value="10">10개</option>
+            <option value="20">20개</option>
+            <option value="30">30개</option>
+        </select>
+    </label>
+    <input type="button" value="조회" onclick="getArticles()">
+    <a href="creator">글쓰기</a>
+</form>
+
+<div id="pagination"></div>
+
+<table id="articleTable">
+    <thead>
+    <tr>
+        <th>글쓴이</th>
+        <th>제목</th>
+        <th>작성시간</th>
+    </tr>
+    </thead>
+    <tbody id="articleTableBody">
+    </tbody>
+</table>
+
+<script>
+    var currentPage = 1;
+    function getArticles() {
+        var pageSize = document.getElementById("pageSize").value;
+        fetch(`/articles/titles?page=${currentPage}&pageSize=${pageSize}`)
+            .then(response => response.json())
+            .then(data => {
+                var articleTableBody = document.getElementById("articleTableBody");
+                articleTableBody.innerHTML = ''; // 기존 데이터를 모두 제거
+
+                // 페이지네이션을 위한 변수 초기화
+                var totalArticles = data.length;
+                var pagination = document.getElementById("pagination");
+
+                // 페이지 이동 버튼 생성
+                pagination.innerHTML = `
+                    <button onclick="prevPage()">이전</button>
+                    현재 페이지: ${currentPage}
+                    <button onclick="nextPage()">다음</button>
+                `;
+
+                for (var i = 0; i < totalArticles; i++) {
+                    var article = data[i];
+                    var row = `<tr>
+                        <td>${article.author}</td>
+                        <td><a href="/viewer?id=${article.id}">${article.title}</a></td>
+                        <td>${article.createAt}</td>
+                    </tr>`;
+                    articleTableBody.innerHTML += row;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function nextPage() {
+        currentPage++;
+        getArticles();
+    }
+
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            getArticles();
+        }
+    }
+
+    // 페이지 로드 시 초기 데이터 조회
+    getArticles();
+</script>
+</body>
+</html>

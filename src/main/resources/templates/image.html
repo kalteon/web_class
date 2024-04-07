@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload and Display</title>
+</head>
+<body>
+<h1>Image Upload and Display</h1>
+
+<!-- 이미지 업로드 폼 -->
+<form id="imageUploadForm" action="/images" method="post" enctype="multipart/form-data">
+    <input type="file" name="imageFile" id="imageFileInput" accept="image/*" required>
+    <button type="submit">Upload Image</button>
+</form>
+
+<!-- 업로드한 이미지 표시 -->
+<div id="uploadedImageContainer"></div>
+
+<script>
+    // 이미지를 업로드한 후 업로드된 이미지를 표시하는 함수
+    function uploadImage() {
+        var formData = new FormData();
+        var imageFileInput = document.getElementById("imageFileInput");
+        formData.append("imageFile", imageFileInput.files[0]);
+
+        fetch("/images", {
+            method: "POST",
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                // 이미지 업로드 성공 시, 업로드된 이미지 표시
+                console.log(data);
+                var uploadedImageContainer = document.getElementById("uploadedImageContainer");
+                var imageElement = document.createElement("img");
+                imageElement.src = "/images/" + data.fileName; // 업로드된 이미지의 URL
+                uploadedImageContainer.appendChild(imageElement);
+
+                // 이미지 삭제 버튼 생성
+                var deleteButton = document.createElement("button");
+                deleteButton.innerText = "Delete Image";
+                deleteButton.onclick = function() {
+                    deleteImage(data.fileName); // 이미지 삭제 함수 호출
+                };
+                uploadedImageContainer.appendChild(deleteButton);
+            })
+            .catch(error => console.error("Failed to upload image: ", error));
+    }
+
+    // 이미지 업로드 폼의 submit 이벤트 핸들러 등록
+    document.getElementById("imageUploadForm").addEventListener("submit", function(event) {
+        event.preventDefault(); // 기본 동작 중지
+        uploadImage(); // 이미지 업로드 함수 호출
+    });
+
+    // 이미지 삭제 함수
+    function deleteImage(fileName) {
+        fetch("/images/" + fileName, {
+            method: "DELETE"
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to delete image');
+                }
+                // 이미지 삭제 성공 시, 업로드된 이미지 및 삭제 버튼 제거
+                var uploadedImageContainer = document.getElementById("uploadedImageContainer");
+                uploadedImageContainer.innerHTML = "";
+            })
+            .catch(error => console.error("Failed to delete image: ", error));
+    }
+
+    // 페이지 로드 시 이미지를 가져와서 표시하는 함수
+    function loadImage(fileName) {
+        fetch(`/images/${fileName}`) // 이미지 파일 이름을 사용하여 URL 생성
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error('Network response was not ok.');
+            })
+            .then(blob => {
+                var imageElement = document.createElement("img");
+                imageElement.src = URL.createObjectURL(blob);
+                var uploadedImageContainer = document.getElementById("uploadedImageContainer");
+                uploadedImageContainer.appendChild(imageElement);
+            })
+            .catch(error => console.error("Failed to load image: ", error));
+    }
+
+    // 페이지 로드 시 이미지를 가져와서 표시하는 함수 호출
+    loadImage();
+</script>
+</body>
+</html>
