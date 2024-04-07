@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartException;
 import java.io.IOException;
 
 @ControllerAdvice
-public class ImageControllerAdvice {
+public class S3ImageControllerAdvice {
 
     @ExceptionHandler(MultipartException.class)
     public ResponseEntity<MessageResponse> handleMultipartException(MultipartException e) {

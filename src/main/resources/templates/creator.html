@@ -41,10 +41,12 @@
       })
               .then(response => response.json())
               .then(data => {
+                console.log(data)
                 console.log("Image " + imageNumber + " uploaded. File name:", data.fileName);
                 resolve(data.fileName);
               })
               .catch(error => {
+                console.log(error)
                 console.error("Failed to upload image " + imageNumber + ":", error);
                 reject(error);
               });
